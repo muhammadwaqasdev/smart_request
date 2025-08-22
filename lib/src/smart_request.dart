@@ -19,8 +19,7 @@ Future<T> smartRequest<T>(
   CacheConfig cacheConfig = const CacheConfig(),
   String? cacheKey,
   CacheStore<T>? cacheStore,
-  FutureOr<void> Function(T value)?
-      onRefresh, // invoked when background refresh completes
+  FutureOr<void> Function(T value)? onRefresh,
 }) async {
   // Shortcut: no cache path (default)
   if (cacheConfig.policy == CachePolicy.noCache) {

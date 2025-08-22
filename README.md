@@ -1,6 +1,9 @@
-[![Pub Version](https://img.shields.io/pub/v/smart_request?logo=dart&logoColor=white)](https://pub.dev/packages/smart_request/)
-[![Dart SDK Version](https://badgen.net/pub/sdk-version/smart_request)](https://pub.dev/packages/smart_request/)
-[![License](https://img.shields.io/github/license/muhammadwaqasdev/smart_request)](https://github.com/muhammadwaqasdev/smart_request/blob/main/LICENSE)
+[![Pub Version](https://img.shields.io/pub/v/smart_request?logo=dart&logoColor=white)](https://pub.dev/packages/smart_request)
+[![Pub Likes](https://img.shields.io/pub/likes/smart_request)](https://pub.dev/packages/smart_request/score)
+[![Pub Points](https://img.shields.io/pub/points/smart_request)](https://pub.dev/packages/smart_request/score)
+[![Popularity](https://img.shields.io/pub/popularity/smart_request)](https://pub.dev/packages/smart_request/score)
+[![Dart SDK](https://badgen.net/pub/sdk-version/smart_request)](https://pub.dev/packages/smart_request)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 # Smart Request
 
@@ -58,7 +61,13 @@ Future<void> main() async {
         policy: CachePolicy.cacheAndRefresh,
         ttl: Duration(minutes: 10),
       ),
-      cacheKey: 'GET:$url',
+      cacheKey: defaultCacheKeyBuilder(CacheKeyParts(
+        method: 'GET',
+        url: url,
+        query: const {},
+        headers: const {},
+        varyHeaders: const ['authorization'],
+      )),
       cacheStore: cache,
       onRefresh: (value) {
         print('🔄 Background refreshed cache with latest data');
@@ -113,6 +122,29 @@ See `example/lib/main.dart` for a runnable example using Dio.
 |--------|---------------|----------|-------------|
 | policy | CachePolicy   | noCache  | Caching strategy: `noCache`, `cacheFirst`, `cacheAndRefresh`. |
 | ttl    | Duration?     | null     | Time-to-live for entries. `null` means never expire. |
+
+### Cache keys
+
+For robust caching you often need more than just the URL. Build a key using:
+
+- **method**: GET/POST/etc
+- **url**: canonical base URL
+- **query**: sorted query params
+- **body**: canonicalized request payload (for POST/PUT)
+- **headers**: only selected headers (e.g., Authorization) via `varyHeaders`
+
+Helper:
+
+```dart
+final key = defaultCacheKeyBuilder(CacheKeyParts(
+  method: 'POST',
+  url: 'https://api.example.com/items',
+  query: {'page': 1, 'sort': 'asc'},
+  body: {'name': 'abc', 'tags': ['x', 'y']},
+  headers: {'authorization': 'Bearer ...', 'accept': 'application/json'},
+  varyHeaders: ['authorization'],
+));
+```
 
 ## License
 

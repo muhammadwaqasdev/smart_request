@@ -29,7 +29,15 @@ Future<void> main() async {
         policy: CachePolicy.cacheAndRefresh,
         ttl: Duration(minutes: 10),
       ),
-      cacheKey: 'GET:$url',
+      cacheKey: defaultCacheKeyBuilder(
+        CacheKeyParts(
+          method: 'GET',
+          url: url,
+          query: const {},
+          headers: const {},
+          varyHeaders: const ['authorization'],
+        ),
+      ),
       cacheStore: cache,
       onRefresh: (value) {
         print('🔄 Background refreshed cache with latest data: $value');

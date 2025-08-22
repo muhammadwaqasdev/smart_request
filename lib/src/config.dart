@@ -40,7 +40,9 @@ class SmartRequestConfig {
 
   /// Callback invoked before a retry delay is awaited.
   /// Provides the attempt number (1-based), planned delay, and the triggering error.
-  final FutureOr<void> Function(int attempt, Duration nextDelay, Object error, StackTrace stackTrace)? onRetry;
+  final FutureOr<void> Function(
+          int attempt, Duration nextDelay, Object error, StackTrace stackTrace)?
+      onRetry;
 
   /// Predicate that decides whether to use [fallback] when retries are exhausted.
   ///
