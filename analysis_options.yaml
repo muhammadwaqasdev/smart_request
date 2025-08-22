@@ -1,0 +1,11 @@
+include: package:lints/recommended.yaml
+
+linter:
+  rules:
+    avoid_print: false
+    prefer_final_locals: true
+    unawaited_futures: true
+
+analyzer:
+  exclude:
+    - example/**
