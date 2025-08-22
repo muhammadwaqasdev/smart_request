@@ -1,6 +1,6 @@
 name: smart_request
 description: A lightweight Dart package for resilient API calls with retry, backoff, timeout, and fallback.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/muhammadwaqasdev/smart_request
 repository: https://github.com/muhammadwaqasdev/smart_request
 issue_tracker: https://github.com/muhammadwaqasdev/smart_request/issues
