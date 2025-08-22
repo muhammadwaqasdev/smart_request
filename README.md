@@ -1,4 +1,9 @@
-# smart_request
+[![Pub Version](https://img.shields.io/pub/v/dio_smart_retry?logo=dart&logoColor=white)](https://pub.dev/packages/smart_request/)
+[![Dart SDK Version](https://badgen.net/pub/sdk-version/smart_request)](https://pub.dev/packages/smart_request/)
+[![style: very good analysis](https://img.shields.io/badge/style-very_good_analysis-B22C89.svg)](https://pub.dev/packages/very_good_analysis)
+[![License](https://img.shields.io/github/license/rodion-m/smart_request)](https://github.com/rodion-m/smart_request/blob/master/LICENSE)
+
+# Smart Request
 
 Lightweight, dependency-free retries with exponential backoff, timeout, and optional fallback for any async operation.
 
