@@ -1,7 +1,6 @@
-[![Pub Version](https://img.shields.io/pub/v/dio_smart_retry?logo=dart&logoColor=white)](https://pub.dev/packages/smart_request/)
+[![Pub Version](https://img.shields.io/pub/v/smart_request?logo=dart&logoColor=white)](https://pub.dev/packages/smart_request/)
 [![Dart SDK Version](https://badgen.net/pub/sdk-version/smart_request)](https://pub.dev/packages/smart_request/)
-[![style: very good analysis](https://img.shields.io/badge/style-very_good_analysis-B22C89.svg)](https://pub.dev/packages/very_good_analysis)
-[![License](https://img.shields.io/github/license/rodion-m/smart_request)](https://github.com/rodion-m/smart_request/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/muhammadwaqasdev/smart_request)](https://github.com/muhammadwaqasdev/smart_request/blob/main/LICENSE)
 
 # Smart Request
 
@@ -15,6 +14,7 @@ Works with any HTTP client (Dio, http), GraphQL, gRPC, database calls, or your o
 - **Fallback support**: switch to an alternate function when retries are exhausted
 - **Callbacks**: `onError`, `onRetry`
 - **Custom retry predicate**: decide which errors are transient
+- **Built-in offline cache manager**: `noCache`, `cacheFirst`, `cacheAndRefresh`
 
 ## Install
 
@@ -25,7 +25,7 @@ dependencies:
   smart_request: ^0.1.0
 ```
 
-## Quick start (Dio)
+## Quick start (Dio) with cache
 
 ```dart
 import 'dart:async';
@@ -34,14 +34,16 @@ import 'package:smart_request/smart_request.dart';
 
 Future<void> main() async {
   final dio = Dio();
+  final cache = MemoryCacheStore<Response<dynamic>>();
+  const url = 'https://jsonplaceholder.typicode.com/posts/1';
 
   try {
     final response = await smartRequest<Response<dynamic>>(
-      () => dio.get('https://jsonplaceholder.typicode.com/posts/1'),
+      () => dio.get(url),
       fallback: () => dio.get('https://jsonplaceholder.typicode.com/posts/2'),
       config: SmartRequestConfig(
         maxRetries: 3,
-        initialDelay: const Duration(seconds: 1),
+        initialDelay: const Duration(milliseconds: 500),
         maxDelay: const Duration(seconds: 8),
         backoffFactor: 2.0,
         jitter: true,
@@ -49,25 +51,21 @@ Future<void> main() async {
         onError: (e, s) => print('Error: $e'),
         onRetry: (attempt, nextDelay, e, s) =>
             print('Retry #$attempt after $nextDelay due to $e'),
-        // Retry only on timeouts and 5xx from Dio
-        shouldRetry: (e) {
-          if (e is TimeoutException) return true;
-          // dio: handle both DioError (v4) and DioException (v5)
-          final typeName = e.runtimeType.toString();
-          if (typeName == 'DioError' || typeName == 'DioException') {
-            try {
-              final status = (e as dynamic).response?.statusCode ?? 0;
-              return status >= 500;
-            } catch (_) {
-              return false;
-            }
-          }
-          return false;
-        },
+        shouldRetry: (_) => true,
       ),
+      // Scenario 3: return cache and refresh in background
+      cacheConfig: const CacheConfig(
+        policy: CachePolicy.cacheAndRefresh,
+        ttl: Duration(minutes: 10),
+      ),
+      cacheKey: 'GET:$url',
+      cacheStore: cache,
+      onRefresh: (value) {
+        print('🔄 Background refreshed cache with latest data');
+      },
     );
 
-    print('✅ Response data: ${response.data}');
+    print('✅ First return (cache or network): ${response.data}');
   } catch (e) {
     print('❌ Final error: $e');
   }
@@ -83,6 +81,10 @@ Future<T> smartRequest<T>(
   RequestFunc<T> request, {
   RequestFunc<T>? fallback,
   SmartRequestConfig config = const SmartRequestConfig(),
+  CacheConfig cacheConfig = const CacheConfig(),
+  String? cacheKey,
+  CacheStore<T>? cacheStore,
+  FutureOr<void> Function(T value)? onRefresh,
 });
 ```
 
@@ -104,6 +106,13 @@ Future<T> smartRequest<T>(
 ## Example app
 
 See `example/lib/main.dart` for a runnable example using Dio.
+
+## CacheConfig
+
+| Field  | Type          | Default  | Description |
+|--------|---------------|----------|-------------|
+| policy | CachePolicy   | noCache  | Caching strategy: `noCache`, `cacheFirst`, `cacheAndRefresh`. |
+| ttl    | Duration?     | null     | Time-to-live for entries. `null` means never expire. |
 
 ## License
 

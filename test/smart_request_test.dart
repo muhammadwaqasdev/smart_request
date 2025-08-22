@@ -43,5 +43,36 @@ void main() {
         throwsA(isA<StateError>()),
       );
     });
+
+    test('cacheFirst returns cache when present', () async {
+      final store = MemoryCacheStore<int>();
+      await store.set('k', 5);
+      final result = await smartRequest<int>(
+        () async => 1,
+        cacheConfig: const CacheConfig(policy: CachePolicy.cacheFirst),
+        cacheKey: 'k',
+        cacheStore: store,
+      );
+      expect(result, 5);
+    });
+
+    test('cacheAndRefresh returns cache and refreshes in background', () async {
+      final store = MemoryCacheStore<int>();
+      await store.set('k', 10);
+      int refreshed = 0;
+      final result = await smartRequest<int>(
+        () async => 20,
+        cacheConfig: const CacheConfig(policy: CachePolicy.cacheAndRefresh),
+        cacheKey: 'k',
+        cacheStore: store,
+        onRefresh: (v) => refreshed = v,
+      );
+      expect(result, 10); // immediate cached value
+      // Allow microtask to run
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(refreshed, 20);
+      final cached = await store.get('k');
+      expect(cached?.value, 20);
+    });
   });
 }
